@@ -1,0 +1,132 @@
+# --------------------------------------
+# .NET / C# related
+# --------------------------------------
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.log
+*.vspscc
+*.vssscc
+*.pdb
+*.dbmdl
+*.bak
+*.nupkg
+*.snupkg
+
+# ASP.NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# dotnet CLI
+.vscode/
+.vs/
+*.db
+*.DS_Store
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+.idea/.idea.*
+.idea/.name
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.idea/httpRequests/
+.idea/gradle.xml
+.idea/modules.xml
+.idea/caches/
+.idea/libraries/
+.idea/compiler.xml
+
+# Unit Test Results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Build results
+[Bb]uild/
+[Ll]ogs/
+*.log
+*.tlog
+
+# Npm / Yarn (caso use front-end)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Docker
+*.pid
+*.seed
+*.log
+*.bak
+docker-compose.override.yml
+
+# Publish outputs
+*.publish/
+publish/
+out/
+
+# Configuration transforms
+appsettings.*.json
+secrets.json
+
+# Backup & Temp Files
+*.tmp
+*.temp
+*.bak
+*.old
+*.swp
+*~
+
+# IDE and OS generated
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.directory
+
+# Logs and temp
+*.log
+*.vspscc
+*.vssscc
+*.user
+*.suo
+
+# JetBrains Rider Cache (deep)
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/.idea.*
+.idea/**/dataSources/
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+
+# Mac OS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~ 
+.nfs*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
