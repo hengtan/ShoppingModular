@@ -1,11 +1,12 @@
+using KafkaProducerService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 using Orders.Consumer;
 using ShoppingModular.Domain.Orders;
-using ShoppingModular.Infrastructure.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
+using ShoppingModular.Infrastructure.Orders;
 
 Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
@@ -34,6 +35,8 @@ Host.CreateDefaultBuilder(args)
 
         // Kafka Consumer Worker
         services.AddHostedService<OrderCreatedConsumerWorker>();
+
+        services.AddSingleton<IKafkaProducerService, KafkaProducerService.KafkaProducerService>();
     })
     .Build()
     .Run();

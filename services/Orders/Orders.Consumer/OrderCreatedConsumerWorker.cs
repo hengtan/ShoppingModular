@@ -14,7 +14,7 @@ using ShoppingModular.Infrastructure.Interfaces;
 namespace Orders.Consumer;
 
 /// <summary>
-/// Worker que escuta o tópico "orders.created" e projeta no MongoDB e Redis.
+///     Worker que escuta o tópico "orders.created" e projeta no MongoDB e Redis.
 /// </summary>
 public class OrderCreatedConsumerWorker(IServiceProvider serviceProvider, IConfiguration configuration)
     : BackgroundService
@@ -32,7 +32,6 @@ public class OrderCreatedConsumerWorker(IServiceProvider serviceProvider, IConfi
         consumer.Subscribe("orders.created");
 
         while (!stoppingToken.IsCancellationRequested)
-        {
             try
             {
                 var result = consumer.Consume(stoppingToken);
@@ -67,7 +66,6 @@ public class OrderCreatedConsumerWorker(IServiceProvider serviceProvider, IConfi
             {
                 Console.WriteLine($"❌ Error: {ex.Message}");
             }
-        }
 
         consumer.Close();
     }
