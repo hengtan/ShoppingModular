@@ -1,19 +1,31 @@
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
+using Orders.API.Commands;
 using ShoppingModular.Infrastructure.DependencyInjection;
 using ShoppingModular.Infrastructure.Orders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Swagger for testing
+// ─────────────────────────────────────────────────────────────
+// 1. 🔧 Configurações e Injeção de Dependência
+// ─────────────────────────────────────────────────────────────
+
+// Swagger para testes interativos
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add PostgreSQL DbContext
+// Controllers baseadas em classes
+builder.Services.AddControllers();
+
+// MediatR para CQRS (Commands & Queries)
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssemblyContaining<CreateOrderCommand>());
+
+// PostgreSQL - gravação (EF Core)
 builder.Services.AddDbContext<OrderDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
-// Add MongoDB
+// MongoDB - leitura
 builder.Services.AddSingleton<IMongoClient>(sp =>
 {
     var config = builder.Configuration.GetSection("MongoSettings");
@@ -27,32 +39,32 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
     return client.GetDatabase(config["Database"]);
 });
 
-// Add Redis
+// Redis - cache
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
-// Add custom Infrastructure services
+// Registra infraestrutura compartilhada (repositories, facades, cache, etc)
 builder.Services.AddInfrastructure();
+
+// ─────────────────────────────────────────────────────────────
+// 2. ⚙️ Configuração do Pipeline HTTP
+// ─────────────────────────────────────────────────────────────
 
 var app = builder.Build();
 
-// Swagger UI
-app.UseSwagger();
-app.UseSwaggerUI();
-
-// Health check route
-app.MapGet("/", () => Results.Ok("Orders.API is running"));
-
-// Exemplo (vamos adicionar a rota real depois)
-app.MapGet("/api/orders/{id}", async (
-    Guid id,
-    OrderReadFacade facade,
-    CancellationToken ct) =>
+// Ativa Swagger apenas em dev
+if (app.Environment.IsDevelopment())
 {
-    var order = await facade.GetByIdAsync(id, ct);
-    return order is null ? Results.NotFound() : Results.Ok(order);
-});
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// Roteamento padrão
+app.MapControllers();
+
+// Health Check
+app.MapGet("/", () => Results.Ok("Orders.API is running 🚀"));
 
 app.Run();
