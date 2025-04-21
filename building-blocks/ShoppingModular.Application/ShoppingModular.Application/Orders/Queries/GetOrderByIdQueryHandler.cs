@@ -2,7 +2,7 @@ using MediatR;
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Orders;
 
-namespace Orders.API.Queries;
+namespace ShoppingModular.Application.Orders.Queries;
 
 /// <summary>
 /// Handler responsável por buscar o pedido com cache-aside (Redis -> Mongo fallback).

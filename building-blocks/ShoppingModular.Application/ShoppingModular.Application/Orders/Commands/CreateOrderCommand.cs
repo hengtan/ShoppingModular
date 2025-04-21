@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Orders.API.Commands;
+namespace ShoppingModular.Application.Orders.Commands;
 
 /// <summary>
 /// Comando responsável por criar um novo pedido.

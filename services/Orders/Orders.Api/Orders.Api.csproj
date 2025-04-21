@@ -18,8 +18,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\building-blocks\ShoppingModular.Application\ShoppingModular.Application\ShoppingModular.Application.csproj" />
       <ProjectReference Include="..\..\..\building-blocks\ShoppingModular.Domain\ShoppingModular.Domain\ShoppingModular.Domain.csproj" />
       <ProjectReference Include="..\..\..\building-blocks\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\Infrastructure\ShoppingModular.Infrastructure\Kafka\KafkaProducerService.Api\KafkaProducerService.Api.csproj" />
     </ItemGroup>
 
 </Project>

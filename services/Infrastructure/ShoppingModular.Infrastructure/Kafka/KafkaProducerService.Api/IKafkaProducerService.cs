@@ -1,6 +1,6 @@
 namespace KafkaProducerService.Api;
 
-public class IKafkaProducerService
+public interface IKafkaProducerService
 {
-    
+    Task PublishAsync<T>(string topic, T message, CancellationToken cancellationToken = default);
 }

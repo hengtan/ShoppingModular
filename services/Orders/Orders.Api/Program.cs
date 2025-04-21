@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
-using Orders.API.Commands;
+using ShoppingModular.Application.Orders.Commands;
 using ShoppingModular.Infrastructure.DependencyInjection;
 using ShoppingModular.Infrastructure.Orders;
 

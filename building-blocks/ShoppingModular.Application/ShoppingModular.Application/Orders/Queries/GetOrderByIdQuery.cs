@@ -1,7 +1,7 @@
 using MediatR;
 using ShoppingModular.Domain.Orders;
 
-namespace Orders.API.Queries;
+namespace ShoppingModular.Application.Orders.Queries;
 
 /// <summary>
 /// Query para buscar um pedido pelo ID.

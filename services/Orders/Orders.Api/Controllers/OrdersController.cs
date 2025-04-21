@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Orders.API.Commands;
-using Orders.API.Queries;
+using ShoppingModular.Application.Orders.Commands;
+using ShoppingModular.Application.Orders.Queries;
 using ShoppingModular.Domain.Orders;
 
 namespace Orders.API.Controllers;
