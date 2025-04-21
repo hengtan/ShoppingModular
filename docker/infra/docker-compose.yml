@@ -1,8 +1,6 @@
 version: '3.9'
-
 services:
 
-  # PostgreSQL - banco principal relacional
   postgres:
     image: postgres:16
     container_name: shopping_postgres
@@ -14,13 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # Redis - cache em memória
   redis:
     image: redis:7
     container_name: shopping_redis
@@ -29,7 +21,6 @@ services:
     volumes:
       - redis_data:/data
 
-  # MongoDB - banco NoSQL para leitura/projeção
   mongo:
     image: mongo:7
     container_name: shopping_mongo
@@ -38,7 +29,6 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  # Zookeeper - necessário para orquestrar o Kafka
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: shopping_zookeeper
@@ -47,7 +37,6 @@ services:
     ports:
       - "2181:2181"
 
-  # Kafka - mensageria entre os microserviços
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: shopping_kafka
@@ -63,7 +52,6 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
-  # Prometheus - coleta de métricas
   prometheus:
     image: prom/prometheus
     container_name: shopping_prometheus
@@ -71,20 +59,13 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    depends_on:
-      - kafka
-      - postgres
 
-  # Grafana - visualização de métricas do Prometheus
   grafana:
     image: grafana/grafana
     container_name: shopping_grafana
     ports:
       - "3000:3000"
-    depends_on:
-      - prometheus
 
-  # Elasticsearch - armazenamento e busca de logs
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
     container_name: shopping_elasticsearch
@@ -96,7 +77,6 @@ services:
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
 
-  # Kibana - visualização dos logs via Elasticsearch
   kibana:
     image: docker.elastic.co/kibana/kibana:8.11.3
     container_name: shopping_kibana
@@ -105,10 +85,46 @@ services:
     ports:
       - "5601:5601"
 
-# Volumes persistentes com os nomes originais
+  orders_api:
+    build:
+      context: .
+      dockerfile: services/Orders/Orders.API/Dockerfile
+    container_name: shopping_orders_api
+    ports:
+      - "5001:5001"
+    depends_on:
+      - postgres
+      - redis
+      - mongo
+      - kafka
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  orders_consumer:
+    build:
+      context: .
+      dockerfile: services/Orders/Orders.Consumer/Dockerfile
+    container_name: shopping_orders_consumer
+    depends_on:
+      - kafka
+      - mongo
+      - redis
+
+  kafkaproducerservice_api:
+    build:
+      context: .
+      dockerfile: services/Orders/Kafka/KafkaProducerService.API/Dockerfile
+    container_name: shopping_kafkaproducerservice_api
+    ports:
+      - "5003:5003"
+    depends_on:
+      - kafka
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
 volumes:
   pg_data:
-  mongo_data:
   redis_data:
+  mongo_data:
   kafka_data:
   elastic_data:

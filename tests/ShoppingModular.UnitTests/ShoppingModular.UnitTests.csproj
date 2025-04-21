@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
+        <RootNamespace>ShoppingModular.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -27,7 +28,13 @@
          
       <ProjectReference Include="..\..\building-blocks\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure.csproj" />
          
+      <ProjectReference Include="..\..\services\Infrastructure\Kafka\KafkaProducerService.Api\KafkaProducerService.Api.csproj" />
+         
       <ProjectReference Include="..\..\services\Infrastructure\ShoppingModular.Infrastructure\Kafka\KafkaProducerService.Api\KafkaProducerService.Api.csproj" />
          </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="UnitTest1.cs" />
+    </ItemGroup>
 
 </Project>

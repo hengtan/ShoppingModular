@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\services\Infrastructure\Kafka\KafkaProducerService.Api\KafkaProducerService.Api.csproj" />
       <ProjectReference Include="..\..\..\services\Infrastructure\ShoppingModular.Infrastructure\Kafka\KafkaProducerService.Api\KafkaProducerService.Api.csproj" />
       <ProjectReference Include="..\..\ShoppingModular.Domain\ShoppingModular.Domain\ShoppingModular.Domain.csproj" />
       <ProjectReference Include="..\..\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure.csproj" />
