@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
 using ShoppingModular.Infrastructure.Orders;
-using ShoppingModular.ReadModels.Orders;
 
 namespace ShoppingModular.Infrastructure.DependencyInjection;
 

@@ -1,4 +1,4 @@
-namespace ShoppingModular.ReadModels.Orders;
+namespace ShoppingModular.Domain.Orders;
 
 public class OrderReadModel
 {

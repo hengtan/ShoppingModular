@@ -1,6 +1,6 @@
 using MongoDB.Driver;
+using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Common.Mongo;
-using ShoppingModular.ReadModels.Orders;
 
 // seu read model
 

@@ -1,5 +1,5 @@
 using MediatR;
-using ShoppingModular.ReadModels.Orders;
+using ShoppingModular.Domain.Orders;
 
 namespace Orders.API.Queries;
 

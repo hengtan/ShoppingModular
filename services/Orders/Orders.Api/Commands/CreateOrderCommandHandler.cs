@@ -2,7 +2,6 @@ using MediatR;
 using MongoDB.Driver;
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
-using ShoppingModular.ReadModels.Orders;
 
 namespace Orders.API.Commands;
 

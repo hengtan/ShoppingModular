@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Distributed;
+using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Common.Redis;
-using ShoppingModular.ReadModels.Orders;
 
 // seu read model
 
