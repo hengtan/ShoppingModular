@@ -53,4 +53,32 @@ public class CreateOrderIntegrationTests
         // Aqui você pode implementar validações reais no MongoDB ou Redis
         Console.WriteLine($"✔ Pedido criado e processado: {orderId}");
     }
+
+    [Test]
+    public async Task Should_Create_Order_With_Edge_Amount()
+    {
+        var request = new
+        {
+            CustomerName = _faker.Name.FullName(),
+            TotalAmount = 0.01m
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/orders", request);
+        response.EnsureSuccessStatusCode();
+        var id = await response.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
+        Assert.That(id, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task Should_Return_Json_Content_Type_On_Create()
+    {
+        var request = new
+        {
+            CustomerName = _faker.Name.FullName(),
+            TotalAmount = 123.45m
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/orders", request);
+        Assert.That(response.Content.Headers.ContentType!.MediaType, Is.EqualTo("application/json"));
+    }
 }
