@@ -11,15 +11,17 @@ using StackExchange.Redis;
 using OrderWriteRepository = ShoppingModular.Infrastructure.Orders.OrderWriteRepository;
 
 var builder = WebApplication.CreateBuilder(args);
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
 
 // ─────────────────────────────────────────────────────────────
 // 0. 🧠 Corrige carregamento de appsettings (essencial no Docker/CI)
 // ─────────────────────────────────────────────────────────────
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
+    .AddJsonFile("appsettings.json", optional: true)
+    .AddJsonFile($"appsettings.{environment}.json", optional: true)
+    .AddEnvironmentVariables()
+    .Build();
 
 // ─────────────────────────────────────────────────────────────
 // 1. 🔧 Configurações e Injeção de Dependência
