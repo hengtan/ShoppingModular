@@ -8,7 +8,7 @@ using ShoppingModular.Infrastructure.Orders;
 
 #nullable disable
 
-namespace ShoppingModular.Infrastructure.Migrations
+namespace ShoppingModular.Infrastructure.Migrations.Orders
 {
     [DbContext(typeof(OrderDbContext))]
     partial class OrderDbContextModelSnapshot : ModelSnapshot

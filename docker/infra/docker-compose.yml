@@ -109,7 +109,7 @@ services:
       - mongo
       - kafka
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=CI
 
   orders_consumer:
     build:
@@ -121,13 +121,13 @@ services:
       - redis
       - mongo
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=CI
 
   products_api:
-    container_name: shopping_products_api
     build:
       context: ../..
       dockerfile: services/Products/Products.Api/Dockerfile
+    container_name: shopping_products_api
     ports:
       - "5002:8080"
     depends_on:
@@ -136,21 +136,21 @@ services:
       - mongo
       - kafka
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=CI
     networks:
       - shopping_network
 
   products_consumer:
-    container_name: shopping_products_consumer
     build:
       context: ../..
       dockerfile: services/Products/Products.Consumer/Dockerfile
+    container_name: shopping_products_consumer
     depends_on:
       - kafka
       - postgres
       - mongo
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=CI
     networks:
       - shopping_network
 

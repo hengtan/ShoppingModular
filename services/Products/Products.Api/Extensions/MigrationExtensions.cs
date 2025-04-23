@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace ShoppingModular.Infrastructure.Extensions;
+namespace Products.Api.Extensions;
 
 public static class MigrationExtensions
 {

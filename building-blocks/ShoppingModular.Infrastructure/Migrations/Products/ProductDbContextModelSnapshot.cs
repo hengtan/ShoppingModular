@@ -2,21 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ShoppingModular.Infrastructure.Products;
 
 #nullable disable
 
-namespace ShoppingModular.Infrastructure.Migrations.ProductDb
+namespace ShoppingModular.Infrastructure.Migrations.Products
 {
     [DbContext(typeof(ProductDbContext))]
-    [Migration("20250423182733_InitialCreate_Products")]
-    partial class InitialCreate_Products
+    partial class ProductDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

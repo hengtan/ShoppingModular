@@ -9,11 +9,11 @@ using ShoppingModular.Infrastructure.Orders;
 
 #nullable disable
 
-namespace ShoppingModular.Infrastructure.Migrations
+namespace ShoppingModular.Infrastructure.Migrations.Orders
 {
     [DbContext(typeof(OrderDbContext))]
-    [Migration("20250421232905_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250423192804_InitialCreate_Orders")]
+    partial class InitialCreate_Orders
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

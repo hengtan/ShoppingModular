@@ -1,15 +1,24 @@
 using KafkaProducerService;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
+using Products.Api.Extensions;
 using ShoppingModular.Application.Products.Commands;
 using ShoppingModular.Infrastructure.DependencyInjection;
-using ShoppingModular.Infrastructure.Extensions;
 using ShoppingModular.Infrastructure.Interfaces.Products;
 using ShoppingModular.Infrastructure.Products;
 using StackExchange.Redis;
 using ProductWriteRepository = ShoppingModular.Infrastructure.Products.ProductWriteRepository;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ─────────────────────────────────────────────────────────────
+// 0. 🧠 Corrige carregamento de appsettings (essencial no Docker/CI)
+// ─────────────────────────────────────────────────────────────
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 // ─────────────────────────────────────────────────────────────
 // 1. 🔧 Configuração de Serviços e Injeções de Dependência

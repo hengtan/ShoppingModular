@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ShoppingModular.Infrastructure.Migrations.ProductDb
+namespace ShoppingModular.Infrastructure.Migrations.Products
 {
     /// <inheritdoc />
     public partial class InitialCreate_Products : Migration

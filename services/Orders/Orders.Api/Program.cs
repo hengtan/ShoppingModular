@@ -13,6 +13,15 @@ using OrderWriteRepository = ShoppingModular.Infrastructure.Orders.OrderWriteRep
 var builder = WebApplication.CreateBuilder(args);
 
 // ─────────────────────────────────────────────────────────────
+// 0. 🧠 Corrige carregamento de appsettings (essencial no Docker/CI)
+// ─────────────────────────────────────────────────────────────
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+// ─────────────────────────────────────────────────────────────
 // 1. 🔧 Configurações e Injeção de Dependência
 // ─────────────────────────────────────────────────────────────
 

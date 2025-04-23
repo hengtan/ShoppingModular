@@ -4,7 +4,12 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="**\*.cs" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.4" />
@@ -26,20 +31,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="Class1.cs" />
-        <Compile Remove="Extensions\**" />
+        <Compile Include="Migrations\**\*.cs" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\ShoppingModular.Domain\ShoppingModular.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <EmbeddedResource Remove="Extensions\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="Extensions\**" />
-    </ItemGroup>
-    
 </Project>
