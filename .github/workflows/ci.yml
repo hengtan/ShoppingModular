@@ -24,7 +24,7 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: 🐳 Start Docker containers
-        run: docker compose -f docker/docker-compose.yml up -d
+        run: docker compose -f docker/infra/docker-compose.yml up -d
 
       - name: ⏳ Wait for services to be ready
         run: sleep 20
