@@ -1,84 +1,145 @@
-using System.Net;
-using System.Net.Http.Json;
 using Bogus;
+using Moq;
+using ShoppingModular.Application.Orders.Commands;
+using ShoppingModular.Domain.Orders;
+using ShoppingModular.Infrastructure.Interfaces;
+using KafkaProducerService;
+using MongoDB.Driver;
 
 namespace ShoppingModular.IntegrationTests.Infrastructure;
 
 [TestFixture]
-public class CreateOrderIntegrationTests
+public class CreateOrderUnitTests
 {
+    #region Fields
+
+    private Faker _faker = null!;
+    private Mock<IWriteRepository<Order>> _writeRepo = null!;
+    private Mock<ICacheService<OrderReadModel>> _cache = null!;
+    private Mock<IKafkaProducerService> _kafka = null!;
+    private Mock<IMongoDatabase> _mongoDb = null!;
+    private Mock<IMongoCollection<OrderReadModel>> _mongoCollection = null!;
+
+    #endregion
+
+    #region Setup
+
     [SetUp]
     public void Setup()
     {
-        _client = new HttpClient { BaseAddress = new Uri("http://localhost:5001") };
         _faker = new Faker();
+        _writeRepo = new Mock<IWriteRepository<Order>>();
+        _cache = new Mock<ICacheService<OrderReadModel>>();
+        _kafka = new Mock<IKafkaProducerService>();
+        _mongoDb = new Mock<IMongoDatabase>();
+        _mongoCollection = new Mock<IMongoCollection<OrderReadModel>>();
+
+        _mongoDb.Setup(db => db.GetCollection<OrderReadModel>(
+                It.IsAny<string>(),
+                It.IsAny<MongoCollectionSettings?>()))
+            .Returns(_mongoCollection.Object);
     }
 
-    [TearDown]
-    public void TearDown()
+    #endregion
+
+    #region Helpers
+
+    private CreateOrderCommandHandler CreateHandler()
     {
-        _client.Dispose();
+        return new CreateOrderCommandHandler(
+            _writeRepo.Object,
+            _mongoDb.Object,
+            _cache.Object,
+            _kafka.Object
+        );
     }
 
-    private HttpClient _client = null!;
-    private Faker _faker = null!;
+    #endregion
+
+    #region Tests
 
     [Test]
-    public async Task Should_Create_Order_And_Project_To_Mongo_And_Redis()
+    public async Task Should_Create_Order_And_Project()
     {
-        // Arrange
-        var request = new
+        var command = new CreateOrderCommand(
+            _faker.Name.FullName(),
+            _faker.Random.Decimal(10, 100)
+        );
+
+        var handler = CreateHandler();
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        Assert.Multiple(() =>
         {
-            CustomerName = _faker.Name.FullName(),
-            TotalAmount = _faker.Random.Decimal(50, 500)
-        };
-
-        // Act
-        var response = await _client.PostAsJsonAsync("/api/orders", request);
-
-        // Assert
-        Assert.That(response.IsSuccessStatusCode, Is.True);
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-
-        var content = await response.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
-        Assert.That(content, Is.Not.Null);
-        Assert.That(content!.ContainsKey("id"), Is.True);
-
-        var orderId = content["id"];
-        Assert.That(orderId, Is.Not.EqualTo(Guid.Empty));
-
-        // Aguarda o Kafka Consumer processar (simulado)
-        await Task.Delay(3000);
-
-        // Aqui você pode implementar validações reais no MongoDB ou Redis
-        Console.WriteLine($"✔ Pedido criado e processado: {orderId}");
-    }
-
-    [Test]
-    public async Task Should_Create_Order_With_Edge_Amount()
-    {
-        var request = new
-        {
-            CustomerName = _faker.Name.FullName(),
-            TotalAmount = 0.01m
-        };
-
-        var response = await _client.PostAsJsonAsync("/api/orders", request);
-        response.EnsureSuccessStatusCode();
-        var id = await response.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
-        Assert.That(id, Is.Not.Null);
+            Assert.That(result, Is.Not.EqualTo(Guid.Empty));
+            _writeRepo.Verify(r => r.AddAsync(It.IsAny<Order>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mongoDb.Verify(db => db.GetCollection<OrderReadModel>("orders", null), Times.Once);
+            _mongoCollection.Verify(c => c.InsertOneAsync(It.IsAny<OrderReadModel>(), null, default), Times.Once);
+            _cache.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
+            _kafka.Verify(k => k.PublishAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<CancellationToken>()), Times.Once);
+        });
     }
 
     [Test]
-    public async Task Should_Return_Json_Content_Type_On_Create()
+    public async Task Should_Handle_Min_Amount()
     {
-        var request = new
-        {
-            CustomerName = _faker.Name.FullName(),
-            TotalAmount = 123.45m
-        };
+        var command = new CreateOrderCommand("Edge Heng", 0.01m);
+        var handler = CreateHandler();
+        var result = await handler.Handle(command, CancellationToken.None);
 
-        var response = await _client.PostAsJsonAsync("/api/orders", request);
-        Assert.That(response.Content.Headers.ContentType!.MediaType, Is.EqualTo("application/json"));
+        Assert.That(result, Is.Not.EqualTo(Guid.Empty));
     }
+
+    [Test]
+    public async Task Should_Not_Cache_If_Order_Is_Null()
+    {
+        // Arrange — forçando exceção ao salvar no repo
+        _writeRepo.Setup(r => r.AddAsync(It.IsAny<Order>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("DB failed"));
+
+        var command = new CreateOrderCommand(_faker.Name.FullName(), 199);
+        var handler = CreateHandler();
+
+        try
+        {
+            await handler.Handle(command, CancellationToken.None);
+        }
+        catch
+        {
+            // Assert
+            _cache.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+    }
+
+    [Test]
+    public async Task Should_Create_Valid_ReadModel_Structure()
+    {
+        var command = new CreateOrderCommand("Model Heng", 150);
+        var handler = CreateHandler();
+
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        _cache.Verify(c => c.SetAsync(
+            It.Is<string>(key => key.StartsWith("order:")),
+            It.Is<OrderReadModel>(model =>
+                model.CustomerName == "Model Heng" &&
+                model.TotalAmount == 150 &&
+                model.Id == result),
+            It.IsAny<TimeSpan>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public void Should_Throw_When_Kafka_Fails()
+    {
+        _kafka.Setup(k => k.PublishAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Kafka failure"));
+
+        var command = new CreateOrderCommand(_faker.Name.FullName(), 120);
+        var handler = CreateHandler();
+
+        Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
+    }
+
+    #endregion
 }

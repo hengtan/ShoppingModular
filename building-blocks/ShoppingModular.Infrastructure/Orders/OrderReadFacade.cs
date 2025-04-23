@@ -9,6 +9,7 @@ namespace ShoppingModular.Infrastructure.Orders;
 public class OrderReadFacade(
     IReadRepository<OrderReadModel> mongoRepo,
     ICacheService<OrderReadModel> redisCache)
+    : IOrderReadFacade
 {
     public async Task<OrderReadModel?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {

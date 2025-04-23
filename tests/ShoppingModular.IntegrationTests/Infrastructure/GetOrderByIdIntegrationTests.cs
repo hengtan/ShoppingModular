@@ -1,109 +1,155 @@
-using System.Net;
-using System.Net.Http.Json;
 using Bogus;
-using NUnit.Framework.Legacy;
+using Moq;
+using ShoppingModular.Application.Orders.Queries;
+using ShoppingModular.Domain.Orders;
+using ShoppingModular.Infrastructure.Interfaces;
 
 namespace ShoppingModular.IntegrationTests.Infrastructure;
 
 [TestFixture]
-public class GetOrderByIdIntegrationTests
+public class GetOrderByIdUnitTests
 {
+    private Faker _faker = null!;
+    private Mock<IOrderReadFacade> _facade = null!;
+    private GetOrderByIdQueryHandler _handler = null!;
+
     [SetUp]
     public void Setup()
     {
-        _client = new HttpClient { BaseAddress = new Uri("http://localhost:5001") };
         _faker = new Faker();
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        _client.Dispose(); // ✅ Libera corretamente
-    }
-
-    private HttpClient _client = null!;
-    private Faker _faker = null!;
-
-    [TestCase("00000000-0000-0000-0000-000000000001")] // Use um ID real criado via POST
-    public async Task Should_Get_Order_By_Id_From_Cache_Or_Mongo(Guid id)
-    {
-        var response = await _client.GetAsync($"/api/orders/{id}");
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            Assert.Inconclusive("Order not found in Redis or Mongo. May require a valid ID.");
-            return;
-        }
-
-        Assert.That(response.IsSuccessStatusCode, Is.True);
-
-        var order = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
-        Assert.That(order, Is.Not.Null); // ✅ Corrigido
-        Assert.That(order!.ContainsKey("id"), Is.True);
+        _facade = new Mock<IOrderReadFacade>();
+        _handler = new GetOrderByIdQueryHandler(_facade.Object);
     }
 
     [Test]
-    public async Task Should_Return_404_If_Order_Not_Found()
+    public async Task Should_Return_Order_When_Found_In_Cache_Or_Mongo()
     {
-        var response = await _client.GetAsync($"/api/orders/{Guid.NewGuid()}");
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-    }
-
-    [Test]
-    public async Task Should_Return_Valid_Order_Structure()
-    {
-        var createRequest = new
+        // Arrange
+        var id = Guid.NewGuid();
+        var expected = new OrderReadModel
         {
+            Id = id,
             CustomerName = _faker.Name.FullName(),
-            TotalAmount = 222
+            TotalAmount = _faker.Random.Decimal(100, 500),
+            CreatedAt = DateTime.UtcNow
         };
 
-        var response = await _client.PostAsJsonAsync("/api/orders", createRequest);
-        var content = await response.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
-        var id = content!["id"];
+        _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(expected);
 
-        var getResponse = await _client.GetAsync($"/api/orders/{id}");
-        var order = await getResponse.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+        // Act
+        var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
 
-        Assert.That(order, Is.Not.Null);
-        Assert.That(order!.ContainsKey("customerName"), Is.True);
-        Assert.That(order!.ContainsKey("totalAmount"), Is.True);
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Id, Is.EqualTo(id));
+        Assert.That(result.CustomerName, Is.EqualTo(expected.CustomerName));
     }
 
     [Test]
-    public async Task Should_Respect_Casing_In_Response()
+    public async Task Should_Return_Null_When_Not_Found()
     {
-        var createRequest = new
-        {
-            CustomerName = "Case Test",
-            TotalAmount = 333
-        };
+        var id = Guid.NewGuid();
 
-        var response = await _client.PostAsJsonAsync("/api/orders", createRequest);
-        var content = await response.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
-        var id = content!["id"];
+        _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync((OrderReadModel?)null);
 
-        var getResponse = await _client.GetAsync($"/api/orders/{id}");
-        var body = await getResponse.Content.ReadAsStringAsync();
+        var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
 
-        StringAssert.Contains("customerName", body);
-        StringAssert.Contains("totalAmount", body);
+        Assert.That(result, Is.Null);
     }
 
     [Test]
-    public async Task Should_Return_Correct_Status_Code()
+    public async Task Should_Contain_Valid_Fields()
     {
-        var createRequest = new
+        var id = Guid.NewGuid();
+        var expected = new OrderReadModel
         {
-            CustomerName = "Status Test",
-            TotalAmount = 150
+            Id = id,
+            CustomerName = "Field Check",
+            TotalAmount = 250,
+            CreatedAt = DateTime.UtcNow
         };
 
-        var response = await _client.PostAsJsonAsync("/api/orders", createRequest);
-        var content = await response.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
-        var id = content!["id"];
+        _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(expected);
 
-        var getResponse = await _client.GetAsync($"/api/orders/{id}");
-        Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.CustomerName, Is.EqualTo("Field Check"));
+            Assert.That(result.TotalAmount, Is.EqualTo(250));
+        });
+    }
+
+    [Test]
+    public async Task Should_Fallback_To_Mongo_When_Cache_Is_Null()
+    {
+        var id = Guid.NewGuid();
+        var expected = new OrderReadModel { Id = id, CustomerName = "Mongo Heng", TotalAmount = 150, CreatedAt = DateTime.UtcNow };
+
+        _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(expected);
+
+        var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.CustomerName, Is.EqualTo("Mongo Heng"));
+    }
+
+    [Test]
+    public async Task Should_Handle_Timeout_Cancellation()
+    {
+        var cts = new CancellationTokenSource(1); // cancela rapidamente
+        var id = Guid.NewGuid();
+
+        _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        {
+            await _handler.Handle(new GetOrderByIdQuery(id), cts.Token);
+        });
+    }
+
+    [Test]
+    public async Task Should_Log_If_Order_Not_Found()
+    {
+        var id = Guid.NewGuid();
+
+        _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((OrderReadModel?)null);
+
+        var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
+
+        Assert.That(result, Is.Null);
+        _facade.Verify(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Should_Return_Correct_Structure_When_Valid()
+    {
+        var id = Guid.NewGuid();
+        var order = new OrderReadModel
+        {
+            Id = id,
+            CustomerName = "Struct Heng",
+            TotalAmount = 321,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.CustomerName, Is.EqualTo("Struct Heng"));
+            Assert.That(result.TotalAmount, Is.EqualTo(321));
+            Assert.That(result.CreatedAt, Is.Not.EqualTo(default));
+        });
     }
 }
