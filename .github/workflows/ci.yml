@@ -64,14 +64,14 @@ jobs:
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: 🧱 Run EF Core Migrations (Orders)
-        run: dotnet ef database update --no-restore --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Orders/Orders.Api
+        run: dotnet ef database update --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Orders/Orders.Api
         env:
           DOTNET_ROOT: /usr/share/dotnet
           PATH: $PATH:/home/runner/.dotnet/tools
           ASPNETCORE_ENVIRONMENT: CI
 
       - name: 🧱 Run EF Core Migrations (Products)
-        run: dotnet ef database update --no-restore --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Products/Products.Api --context ProductDbContext
+        run: dotnet ef database update --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Products/Products.Api --context ProductDbContext
         env:
           DOTNET_ROOT: /usr/share/dotnet
           PATH: $PATH:/home/runner/.dotnet/tools
