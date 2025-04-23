@@ -24,7 +24,7 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: 🐳 Start Docker containers
-        run: docker compose -f docker/infra/docker-compose.yml up -d
+        run: docker compose -f docker/docker-compose.yml up -d
 
       - name: ⏳ Wait for services to be ready
         run: sleep 20
@@ -34,6 +34,15 @@ jobs:
 
       - name: 🔨 Build
         run: dotnet build --no-restore --configuration Release
+
+      - name: 🛠 Install EF Tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: 🔧 Add EF Tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: 🧱 Run EF Core Migrations
+        run: dotnet ef database update --project services/Orders/Orders.Api
 
       - name: 🧪 Run tests
         run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
