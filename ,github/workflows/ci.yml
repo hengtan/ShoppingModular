@@ -1,81 +1,21 @@
-name: CI/CD Pipeline
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+env:
+  ASPNETCORE_ENVIRONMENT: CI
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
-    services:
-      mongo:
-        image: mongo:7
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      postgres:
-        image: postgres:16
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: shoppingdb
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    env:
-      ASPNETCORE_ENVIRONMENT: CI
-
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v3
-
-      - name: 🧰 Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      - name: 📦 Restore dependencies
-        run: dotnet restore
+      - name: 🐳 Start Docker containers
+        run: docker compose -f docker/docker-compose.yml up -d
 
-      - name: 🔨 Build
-        run: dotnet build --no-restore --configuration Release
+      - name: ⏳ Wait for services to be ready
+        run: sleep 20
 
-      - name: 🧪 Run tests
-        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
-
-      - name: 🔄 Update vulnerable packages
-        run: |
-          chmod +x ./update-packages.sh
-          ./update-packages.sh
-
-      - name: 📊 Check for changes
-        id: git-check
-        run: |
-          if git diff --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: ✅ Commit updated packages
-        if: steps.git-check.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add .
-          git commit -m "🔒 chore: update vulnerable NuGet packages"
-          git push
+      - run: dotnet restore
+      - run: dotnet build --no-restore --configuration Release
+      - run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
