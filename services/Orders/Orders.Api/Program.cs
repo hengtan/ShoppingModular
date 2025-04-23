@@ -56,7 +56,7 @@ var app = builder.Build();
 builder.WebHost.UseUrls("http://0.0.0.0:5001");
 
 // ✅ Aplica migrations automaticamente
-await app.ApplyMigrationsAsync();
+await app.ApplyMigrationsAsync<OrderDbContext>();
 
 if (app.Environment.IsDevelopment())
 {

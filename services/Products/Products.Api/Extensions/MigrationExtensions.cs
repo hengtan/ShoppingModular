@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using ShoppingModular.Infrastructure.Orders;
 
-namespace Orders.Api.Extensions;
+namespace ShoppingModular.Infrastructure.Extensions;
 
 public static class MigrationExtensions
 {
-    public static async Task<IApplicationBuilder> ApplyMigrationsAsync(this IApplicationBuilder app)
+    public static async Task ApplyMigrationsAsync<TContext>(this WebApplication app)
+        where TContext : DbContext
     {
-        using var scope = app.ApplicationServices.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
 
         const int maxRetries = 10;
         int retry = 0;
@@ -20,32 +20,26 @@ public static class MigrationExtensions
                 var pending = await dbContext.Database.GetPendingMigrationsAsync();
                 if (pending.Any())
                 {
-                    Console.WriteLine("📦 Pending migrations found. Applying...");
+                    Console.WriteLine($"📦 Applying migrations for {typeof(TContext).Name}...");
                     await dbContext.Database.MigrateAsync();
-                    Console.WriteLine("✅ Migrations applied successfully.");
+                    Console.WriteLine($"✅ Migrations applied for {typeof(TContext).Name}.");
                 }
                 else
                 {
-                    Console.WriteLine("✔️ No pending migrations. Database is up-to-date.");
+                    Console.WriteLine($"✔️ No pending migrations for {typeof(TContext).Name}.");
                 }
 
-                break; // se tudo deu certo, sai do loop
+                break;
             }
             catch (Exception ex)
             {
                 retry++;
-                Console.WriteLine($"⏳ Database not ready yet. Retrying {retry}/{maxRetries}...");
-                Console.WriteLine($"Error: {ex.Message}");
-
-                await Task.Delay(3000); // espera 3 segundos antes de tentar de novo
+                Console.WriteLine($"⏳ Retry {retry}/{maxRetries} - Waiting for DB... Error: {ex.Message}");
+                await Task.Delay(3000);
             }
         }
 
         if (retry == maxRetries)
-        {
-            throw new Exception("❌ Failed to connect to database after several retries.");
-        }
-
-        return app;
+            throw new Exception("❌ Failed to apply migrations after multiple retries.");
     }
 }

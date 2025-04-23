@@ -1,9 +1,9 @@
 using KafkaProducerService;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
-using Orders.Api.Extensions;
 using ShoppingModular.Application.Products.Commands;
 using ShoppingModular.Infrastructure.DependencyInjection;
+using ShoppingModular.Infrastructure.Extensions;
 using ShoppingModular.Infrastructure.Interfaces.Products;
 using ShoppingModular.Infrastructure.Products;
 using StackExchange.Redis;
@@ -67,7 +67,7 @@ var app = builder.Build();
 builder.WebHost.UseUrls("http://0.0.0.0:5002");
 
 // Aplica migrações do banco
-await app.ApplyMigrationsAsync();
+await app.ApplyMigrationsAsync<ProductDbContext>();
 
 if (app.Environment.IsDevelopment())
 {

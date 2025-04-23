@@ -27,10 +27,19 @@
 
     <ItemGroup>
         <Compile Remove="Class1.cs" />
+        <Compile Remove="Extensions\**" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\ShoppingModular.Domain\ShoppingModular.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Extensions\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Extensions\**" />
     </ItemGroup>
     
 </Project>

@@ -21,4 +21,8 @@
       <ProjectReference Include="..\..\Infrastructure\Kafka\KafkaProducerService\KafkaProducerService.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Extensions\ApplyMigrationsAsync.cs" />
+    </ItemGroup>
+
 </Project>

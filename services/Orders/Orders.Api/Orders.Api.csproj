@@ -29,6 +29,7 @@
 
     <ItemGroup>
       <Compile Remove="services\**" />
+      <Compile Remove="Extensions\ApplyMigrationsAsync.cs" />
     </ItemGroup>
 
     <ItemGroup>
