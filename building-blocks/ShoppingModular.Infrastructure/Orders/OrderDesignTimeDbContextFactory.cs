@@ -1,24 +1,25 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using ShoppingModular.Infrastructure.Products;
 
-namespace ShoppingModular.Infrastructure.Orders;
-
-public class OrderDesignTimeDbContextFactory : IDesignTimeDbContextFactory<OrderDbContext>
+namespace ShoppingModular.Infrastructure.Orders
 {
-    public OrderDbContext CreateDbContext(string[] args)
+    public class OrderDesignTimeDbContextFactory : IDesignTimeDbContextFactory<OrderDbContext>
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory()) // agora reconhecido!
-            .AddJsonFile("appsettings.Development.json", optional: true)
-            .Build();
+        public OrderDbContext CreateDbContext(string[] args)
+        {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.CI.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
 
-        var connectionString = configuration.GetConnectionString("Postgres");
+            var connectionString = configuration.GetConnectionString("Postgres");
 
-        var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
-        optionsBuilder.UseNpgsql(connectionString);
+            var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
+            optionsBuilder.UseNpgsql(connectionString);
 
-        return new OrderDbContext(optionsBuilder.Options);
+            return new OrderDbContext(optionsBuilder.Options);
+        }
     }
 }
