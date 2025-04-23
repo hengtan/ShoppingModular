@@ -73,7 +73,7 @@ jobs:
         run: dotnet build services/Orders/Orders.Api --configuration Release
 
       - name: 🧱 Run EF Core Migrations (Orders)
-        run: dotnet ef database update --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Orders/Orders.Api --context OrderDbContext
+        run: dotnet ef database update --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Orders/Orders.Api --context OrderDbContext --configuration Release --verbose
         env:
           DOTNET_ROOT: /usr/share/dotnet
           PATH: $PATH:/home/runner/.dotnet/tools
@@ -83,7 +83,7 @@ jobs:
         run: dotnet build building-blocks/ShoppingModular.Infrastructure --configuration Release
 
       - name: 🧱 Run EF Core Migrations (Products)
-        run: dotnet ef database update --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Products/Products.Api --context ProductDbContext
+        run: dotnet ef database update --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Products/Products.Api --context ProductDbContext --configuration Release --verbose
         env:
           DOTNET_ROOT: /usr/share/dotnet
           PATH: $PATH:/home/runner/.dotnet/tools
