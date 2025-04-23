@@ -63,6 +63,12 @@ jobs:
       - name: 🔧 Add EF Tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
+      - name: 🕵️ Check CI appsettings
+        run: |
+          echo "Looking for appsettings.CI.json..."
+          ls -lah services/Orders/Orders.Api/
+          cat services/Orders/Orders.Api/appsettings.CI.json || echo "❌ Not found!"
+
       - name: 🐞 Debug build (Orders.Api)
         run: dotnet build services/Orders/Orders.Api --configuration Release
 
