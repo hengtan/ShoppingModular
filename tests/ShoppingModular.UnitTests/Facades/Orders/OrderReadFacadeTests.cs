@@ -5,7 +5,7 @@ using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
 using ShoppingModular.Infrastructure.Orders;
 
-namespace ShoppingModular.Tests.Facades;
+namespace ShoppingModular.Tests.Facades.Orders;
 
 [TestFixture]
 public class OrderReadFacadeTests

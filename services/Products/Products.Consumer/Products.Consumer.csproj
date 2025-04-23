@@ -7,7 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Confluent.Kafka" Version="2.1.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\building-blocks\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\Infrastructure\Kafka\KafkaProducerService\KafkaProducerService.csproj" />
     </ItemGroup>
 
 </Project>

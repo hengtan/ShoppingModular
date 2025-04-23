@@ -1,44 +1,82 @@
+using KafkaProducerService;
+using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
+using Orders.Api.Extensions;
+using ShoppingModular.Application.Products.Commands;
+using ShoppingModular.Infrastructure.DependencyInjection;
 using ShoppingModular.Infrastructure.Interfaces.Products;
+using ShoppingModular.Infrastructure.Products;
+using StackExchange.Redis;
+using ProductWriteRepository = ShoppingModular.Infrastructure.Products.ProductWriteRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// ─────────────────────────────────────────────────────────────
+// 1. 🔧 Configuração de Serviços e Injeções de Dependência
+// ─────────────────────────────────────────────────────────────
+
+// Controllers + Swagger + API Explorer
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// MediatR (Application Layer)
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssemblyContaining<CreateProductCommand>());
+
+// PostgreSQL (EF Core)
+builder.Services.AddDbContext<ProductDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+
+// MongoDB (projeção de leitura)
+builder.Services.AddSingleton<IMongoClient>(sp =>
+{
+    var config = builder.Configuration.GetSection("MongoSettings");
+    return new MongoClient(config["ConnectionString"]);
+});
+
+builder.Services.AddSingleton<IMongoDatabase>(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    var config = builder.Configuration.GetSection("MongoSettings");
+    return client.GetDatabase(config["Database"]);
+});
+
+// Redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    _ => ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")));
+
+// Kafka
+builder.Services.AddScoped<IKafkaProducerService, KafkaProducerService.KafkaProducerService>();
+
+// Injeções específicas de produtos
 builder.Services.AddScoped<IProductWriteRepository, ProductWriteRepository>();
+builder.Services.AddInfrastructure(); // se estiver com uma extensão para injeções genéricas
+
+// ─────────────────────────────────────────────────────────────
+// 2. 🚀 Configuração e Execução da Aplicação
+// ─────────────────────────────────────────────────────────────
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Aponta para execução via Docker
+builder.WebHost.UseUrls("http://0.0.0.0:5002");
+
+// Aplica migrações do banco
+await app.ApplyMigrationsAsync();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
+app.MapControllers();
+app.MapGet("/", () => Results.Ok("Products.API is running 🚀"));
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

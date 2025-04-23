@@ -1,8 +1,6 @@
-using System.Text.Json;
 using Confluent.Kafka;
-using NUnit.Framework;
 
-namespace ShoppingModular.IntegrationTests.Orders;
+namespace ShoppingModular.IntegrationTests.Infrastructure;
 
 [TestFixture]
 public class KafkaHealthTests

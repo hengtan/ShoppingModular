@@ -1,41 +1,39 @@
-var builder = WebApplication.CreateBuilder(args);
+using KafkaProducerService;
+using MongoDB.Driver;
+using Products.Consumer;
+using ShoppingModular.Domain.Products;
+using ShoppingModular.Infrastructure.Interfaces;
+using ShoppingModular.Infrastructure.Products;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+Host.CreateDefaultBuilder(args)
+    .ConfigureServices((context, services) =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
+        var configuration = context.Configuration;
+
+        // MongoDB
+        services.AddSingleton<IMongoClient>(_ =>
+            new MongoClient(configuration["MongoSettings:ConnectionString"]));
+
+        services.AddSingleton<IMongoDatabase>(sp =>
+        {
+            var client = sp.GetRequiredService<IMongoClient>();
+            return client.GetDatabase(configuration["MongoSettings:Database"]);
+        });
+
+        // Redis
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetConnectionString("Redis");
+        });
+
+        // Projeções e cache
+        services.AddScoped<IReadRepository<ProductReadModel>, ProductReadRepository>();
+        services.AddScoped<ICacheService<ProductReadModel>, ProductCacheService>();
+
+        // Kafka Consumer
+        services.AddHostedService<ProductCreatedConsumerWorker>();
+
+        services.AddSingleton<IKafkaProducerService, KafkaProducerService.KafkaProducerService>();
     })
-    .WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    .Build()
+    .Run();

@@ -1,14 +1,13 @@
 using Bogus;
+using KafkaProducerService;
+using MongoDB.Driver;
 using Moq;
-using NUnit.Framework;
 using ShoppingModular.Application.Orders.Commands;
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
-using KafkaProducerService;
-using MongoDB.Driver;
 using ShoppingModular.Infrastructure.Interfaces.Order;
 
-namespace ShoppingModular.IntegrationTests.Infrastructure;
+namespace ShoppingModular.IntegrationTests.Orders;
 
 [TestFixture]
 public class CreateOrderUnitTests

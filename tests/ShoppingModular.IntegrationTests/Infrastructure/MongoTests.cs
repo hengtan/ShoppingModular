@@ -1,7 +1,7 @@
 using MongoDB.Driver;
 using ShoppingModular.Domain.Orders;
 
-namespace ShoppingModular.IntegrationTests.Orders;
+namespace ShoppingModular.IntegrationTests.Infrastructure;
 
 public class MongoTests
 {

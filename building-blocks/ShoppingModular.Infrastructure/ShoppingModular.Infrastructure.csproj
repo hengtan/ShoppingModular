@@ -25,7 +25,6 @@
 
     <ItemGroup>
         <Compile Remove="Class1.cs" />
-        <Compile Remove="Products\ProductWriteRepository.cs" />
     </ItemGroup>
 
     <ItemGroup>

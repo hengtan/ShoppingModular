@@ -3,7 +3,7 @@ using MongoDB.Driver;
 using Npgsql;
 using StackExchange.Redis;
 
-namespace ShoppingModular.IntegrationTests.Orders;
+namespace ShoppingModular.IntegrationTests.Infrastructure;
 
 [TestFixture]
 public class DatabaseConnectivityTests

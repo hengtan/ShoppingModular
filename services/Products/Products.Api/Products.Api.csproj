@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\building-blocks\ShoppingModular.Application\ShoppingModular.Application.csproj" />
       <ProjectReference Include="..\..\..\building-blocks\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure.csproj" />
       <ProjectReference Include="..\..\Infrastructure\Kafka\KafkaProducerService\KafkaProducerService.csproj" />
     </ItemGroup>
