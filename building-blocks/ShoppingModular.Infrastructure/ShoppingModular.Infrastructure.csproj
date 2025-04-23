@@ -31,10 +31,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="Migrations\**\*.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\ShoppingModular.Domain\ShoppingModular.Domain.csproj" />
     </ItemGroup>
 
