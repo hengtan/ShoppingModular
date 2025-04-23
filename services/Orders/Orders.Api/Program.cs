@@ -5,8 +5,10 @@ using MongoDB.Driver;
 using Orders.Api.Extensions;
 using ShoppingModular.Application.Orders.Commands;
 using ShoppingModular.Infrastructure.DependencyInjection;
+using ShoppingModular.Infrastructure.Interfaces.Order;
 using ShoppingModular.Infrastructure.Orders;
 using StackExchange.Redis;
+using OrderWriteRepository = ShoppingModular.Infrastructure.Orders.OrderWriteRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +46,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.AddInfrastructure();
 
+builder.Services.AddScoped<IOrderWriteRepository, OrderWriteRepository>();
 builder.Services.AddScoped<IKafkaProducerService, KafkaProducerService.KafkaProducerService>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     _ => ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")));

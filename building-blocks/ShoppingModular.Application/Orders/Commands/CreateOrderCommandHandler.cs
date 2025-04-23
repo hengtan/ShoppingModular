@@ -1,24 +1,28 @@
 using KafkaProducerService;
-using KafkaProducerService.Api;
 using MediatR;
 using MongoDB.Driver;
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
+using ShoppingModular.Infrastructure.Interfaces.Order;
 
 namespace ShoppingModular.Application.Orders.Commands;
 
 /// <summary>
-///     Handler responsável por executar o comando de criação de pedido.
+/// Handler responsável por criar pedidos, salvar projeção, cachear e publicar evento no Kafka.
 /// </summary>
 public class CreateOrderCommandHandler(
-    IWriteRepository<Order> writeRepo,
+    IOrderWriteRepository writeRepo,
     IMongoDatabase mongoDb,
     ICacheService<OrderReadModel> cache,
-    IKafkaProducerService kafka) // ✅ Novo parâmetro
-    : IRequestHandler<CreateOrderCommand, Guid>
+    IKafkaProducerService kafka
+) : IRequestHandler<CreateOrderCommand, Guid>
 {
+    #region Handle
+
     public async Task<Guid> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
+        #region 1. Criação do domínio
+
         var order = new Order
         {
             Id = Guid.NewGuid(),
@@ -27,7 +31,15 @@ public class CreateOrderCommandHandler(
             TotalAmount = request.TotalAmount
         };
 
+        #endregion
+
+        #region 2. Persiste no PostgreSQL
+
         await writeRepo.AddAsync(order, cancellationToken);
+
+        #endregion
+
+        #region 3. Cria o ReadModel para projeção
 
         var readModel = new OrderReadModel
         {
@@ -37,14 +49,35 @@ public class CreateOrderCommandHandler(
             TotalAmount = order.TotalAmount
         };
 
-        await mongoDb.GetCollection<OrderReadModel>("orders")
+        #endregion
+
+        #region 4. Persiste no MongoDB (projeção de leitura)
+
+        await mongoDb
+            .GetCollection<OrderReadModel>("orders")
             .InsertOneAsync(readModel, cancellationToken: cancellationToken);
 
-        await cache.SetAsync($"order:{order.Id}", readModel, TimeSpan.FromMinutes(10), cancellationToken);
+        #endregion
 
-        // ✅ Publica o evento no Kafka
+        #region 5. Cacheia no Redis (cache-aside pattern)
+
+        await cache.SetAsync(
+            $"order:{order.Id}",
+            readModel,
+            TimeSpan.FromMinutes(10),
+            cancellationToken
+        );
+
+        #endregion
+
+        #region 6. Publica no Kafka
+
         await kafka.PublishAsync("orders.created", readModel, cancellationToken);
+
+        #endregion
 
         return order.Id;
     }
+
+    #endregion
 }

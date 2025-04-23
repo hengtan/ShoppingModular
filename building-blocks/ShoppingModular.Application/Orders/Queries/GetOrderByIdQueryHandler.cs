@@ -1,6 +1,7 @@
 using MediatR;
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
+using ShoppingModular.Infrastructure.Interfaces.Order;
 using ShoppingModular.Infrastructure.Orders;
 
 namespace ShoppingModular.Application.Orders.Queries;

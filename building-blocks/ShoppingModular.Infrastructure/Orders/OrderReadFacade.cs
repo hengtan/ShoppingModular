@@ -1,5 +1,6 @@
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
+using ShoppingModular.Infrastructure.Interfaces.Order;
 
 namespace ShoppingModular.Infrastructure.Orders;
 

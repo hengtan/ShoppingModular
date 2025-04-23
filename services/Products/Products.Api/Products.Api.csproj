@@ -7,7 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MediatR" Version="12.5.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\building-blocks\ShoppingModular.Infrastructure\ShoppingModular.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\Infrastructure\Kafka\KafkaProducerService\KafkaProducerService.csproj" />
     </ItemGroup>
 
 </Project>

@@ -3,6 +3,7 @@ using Moq;
 using ShoppingModular.Application.Orders.Queries;
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Interfaces;
+using ShoppingModular.Infrastructure.Interfaces.Order;
 
 namespace ShoppingModular.IntegrationTests.Infrastructure;
 

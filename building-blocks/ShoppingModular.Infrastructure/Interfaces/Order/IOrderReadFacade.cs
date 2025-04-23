@@ -1,6 +1,6 @@
 using ShoppingModular.Domain.Orders;
 
-namespace ShoppingModular.Infrastructure.Interfaces;
+namespace ShoppingModular.Infrastructure.Interfaces.Order;
 
 public interface IOrderReadFacade
 {
