@@ -22,6 +22,10 @@ COPY building-blocks/ShoppingModular.Domain/ ./building-blocks/ShoppingModular.D
 COPY building-blocks/ShoppingModular.Infrastructure/ ./building-blocks/ShoppingModular.Infrastructure/
 COPY services/Infrastructure/Kafka/KafkaProducerService/ ./services/Infrastructure/Kafka/KafkaProducerService/
 
+# Garante que os arquivos de configuração estejam presentes para o publish
+COPY services/Products/Products.Api/appsettings.json ./services/Products/Products.Api/
+COPY services/Products/Products.Api/appsettings.CI.json ./services/Products/Products.Api/
+
 # 🚫 Remove appsettings.json duplicado que causa conflito no publish
 RUN rm -f /src/services/Infrastructure/Kafka/KafkaProducerService.Api/appsettings.json
 

@@ -5,6 +5,11 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY . .
+
+# Garante que os arquivos de configuração estejam presentes para o publish
+COPY services/Products/Products.Api/appsettings.json ./services/Products/Products.Api/
+COPY services/Products/Products.Api/appsettings.CI.json ./services/Products/Products.Api/
+
 WORKDIR /src/services/Products/Products.Api
 RUN dotnet build -c Release -o /app/build
 
