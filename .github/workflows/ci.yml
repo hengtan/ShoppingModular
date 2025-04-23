@@ -38,9 +38,28 @@ jobs:
               sleep 5
             fi
             if [ "$i" -eq 20 ]; then
-              echo "❌ PostgreSQL did not respond. Showing container logs:"
-              docker logs shopping_postgres || true
+              echo "❌ PostgreSQL did not respond. Showing logs:"
               docker ps -a
+              docker logs shopping_postgres || true
+              exit 1
+            fi
+          done
+
+      - name: 🩺 Wait for MongoDB to be ready
+        run: |
+          echo "⏳ Waiting for MongoDB..."
+          for i in {1..20}; do
+            if echo 'db.runCommand({ ping: 1 })' | mongo --host mongo:27017 --quiet; then
+              echo "✅ MongoDB is ready!"
+              break
+            else
+              echo "⌛ Attempt $i/20 failed. Retrying in 5s..."
+              sleep 5
+            fi
+            if [ "$i" -eq 20 ]; then
+              echo "❌ MongoDB did not respond. Showing logs:"
+              docker ps -a
+              docker logs shopping_mongo || true
               exit 1
             fi
           done
@@ -60,7 +79,7 @@ jobs:
       - name: 🧱 Run EF Core Migrations
         run: dotnet ef database update --project services/Orders/Orders.Api
 
-      - name: 🧪 Run tests
+      - name: 🧪 Run tests with code coverage
         run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
 
       - name: 🔄 Update vulnerable packages
