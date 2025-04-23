@@ -12,6 +12,11 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7
@@ -28,6 +33,11 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -87,7 +97,7 @@ services:
 
   orders_api:
     build:
-      context: ../..  # sobe da pasta docker/infra para a raiz
+      context: ../..
       dockerfile: services/Orders/Orders.Api/Dockerfile
     container_name: shopping_orders_api
     ports:
@@ -111,21 +121,6 @@ services:
       - mongo
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-
-  ef_migrator:
-    image: mcr.microsoft.com/dotnet/sdk:9.0
-    container_name: ef_migrator
-    working_dir: /src
-    volumes:
-      - .:/src
-    command: >
-      dotnet ef database update
-      --project building-blocks/ShoppingModular.Infrastructure
-      --startup-project services/Orders/Orders.Api
-    depends_on:
-      - postgres
-    networks:
-      - default
 
 volumes:
   pg_data:

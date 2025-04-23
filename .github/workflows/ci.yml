@@ -15,60 +15,57 @@ jobs:
       ASPNETCORE_ENVIRONMENT: CI
 
     steps:
-      # 📥 Clona o repositório
       - name: 📥 Checkout code
         uses: actions/checkout@v3
 
-      # 🧰 Instala o .NET SDK 9.0
       - name: 🧰 Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      # 🐳 Sobe os containers com bancos e mensageria
       - name: 🐳 Start Docker containers
         run: docker compose -f docker/infra/docker-compose.yml up -d
 
-      # 🩺 Aguarda o PostgreSQL estar pronto com pg_isready
       - name: 🩺 Wait for PostgreSQL to be ready
         run: |
-          until pg_isready -h postgres -U postgres; do
-            echo "⏳ Waiting for PostgreSQL..."
-            sleep 2
+          echo "⏳ Waiting for PostgreSQL..."
+          for i in {1..10}; do
+            if pg_isready -h postgres -U postgres; then
+              echo "✅ PostgreSQL is ready!"
+              break
+            else
+              echo "⌛ Attempt $i/10 failed. Retrying..."
+              sleep 5
+            fi
+            if [ "$i" -eq 10 ]; then
+              echo "❌ PostgreSQL did not respond. Failing."
+              exit 1
+            fi
           done
-          echo "✅ PostgreSQL is ready!"
 
-      # 📦 Restaura os pacotes NuGet
       - name: 📦 Restore dependencies
         run: dotnet restore
 
-      # 🔨 Compila o projeto em modo Release
       - name: 🔨 Build
         run: dotnet build --no-restore --configuration Release
 
-      # 🛠 Instala a CLI do EF Core
       - name: 🛠 Install EF Tools
         run: dotnet tool install --global dotnet-ef
 
-      # 🔧 Adiciona EF CLI ao PATH
       - name: 🔧 Add EF Tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      # 🧱 Aplica as migrations no banco Postgres
       - name: 🧱 Run EF Core Migrations
         run: dotnet ef database update --project services/Orders/Orders.Api
 
-      # 🧪 Executa os testes e coleta cobertura
       - name: 🧪 Run tests
         run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
 
-      # 🔄 Atualiza pacotes vulneráveis via script
       - name: 🔄 Update vulnerable packages
         run: |
           chmod +x ./update-packages.sh
           ./update-packages.sh
 
-      # 📊 Verifica alterações após o update
       - name: 📊 Check for changes
         id: git-check
         run: |
@@ -78,7 +75,6 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # ✅ Comita alterações se houver mudanças
       - name: ✅ Commit updated packages
         if: steps.git-check.outputs.changed == 'true'
         run: |
