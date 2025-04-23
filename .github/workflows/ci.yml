@@ -48,20 +48,43 @@ jobs:
       - name: 📦 Restore dependencies
         run: dotnet restore
 
+      - name: 🧹 Clean solution
+        run: dotnet clean
+
       - name: 🔨 Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: 🛠 Install EF Tools
-        run: dotnet tool install --global dotnet-ef
+      - name: 🛠 Install EF Tools (safe)
+        run: |
+          if ! dotnet tool list -g | grep -q dotnet-ef; then
+            dotnet tool install --global dotnet-ef
+          fi
 
       - name: 🔧 Add EF Tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: 🧱 Run EF Core Migrations
-        run: dotnet ef database update --project services/Orders/Orders.Api
+      - name: 🧱 Run EF Core Migrations (Orders)
+        run: dotnet ef database update --no-restore --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Orders/Orders.Api
+        env:
+          DOTNET_ROOT: /usr/share/dotnet
+          PATH: $PATH:/home/runner/.dotnet/tools
+          ASPNETCORE_ENVIRONMENT: CI
+
+      - name: 🧱 Run EF Core Migrations (Products)
+        run: dotnet ef database update --no-restore --project building-blocks/ShoppingModular.Infrastructure --startup-project services/Products/Products.Api --context ProductDbContext
+        env:
+          DOTNET_ROOT: /usr/share/dotnet
+          PATH: $PATH:/home/runner/.dotnet/tools
+          ASPNETCORE_ENVIRONMENT: CI
 
       - name: 🧪 Run tests
-        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+        run: dotnet test --no-build --configuration Release --logger:"console;verbosity=detailed" --collect:"XPlat Code Coverage"
+
+      - name: 💾 Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage
+          path: '**/TestResults/**/*.xml'
 
       - name: 🔄 Update vulnerable packages
         run: |
