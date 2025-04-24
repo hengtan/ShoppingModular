@@ -1,14 +1,14 @@
 using KafkaProducerService;
 using MediatR;
+using MongoDB.Driver;
 using ShoppingModular.Domain.Products;
 using ShoppingModular.Infrastructure.Interfaces;
-using MongoDB.Driver;
 using ShoppingModular.Infrastructure.Interfaces.Products;
 
 namespace ShoppingModular.Application.Products.Commands;
 
 /// <summary>
-/// Handler responsável por criar produtos, projetar leitura e publicar no Kafka.
+///     Handler responsável por criar produtos, projetar leitura e publicar no Kafka.
 /// </summary>
 public class CreateProductCommandHandler(
     IProductWriteRepository writeRepo,

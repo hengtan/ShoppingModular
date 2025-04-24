@@ -1,4 +1,3 @@
-using KafkaProducerService;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ShoppingModular.Application.Orders.Commands;

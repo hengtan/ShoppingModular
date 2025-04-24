@@ -10,17 +10,6 @@ namespace ShoppingModular.Tests.Facades.Products;
 [TestFixture]
 public class ProductReadFacadeTests
 {
-    #region Fields
-
-    private Faker _faker = null!;
-    private Mock<IReadRepository<ProductReadModel>> _mongoMock = null!;
-    private Mock<ICacheService<ProductReadModel>> _cacheMock = null!;
-    private ProductReadFacade _facade = null!;
-
-    #endregion
-
-    #region Setup
-
     [SetUp]
     public void Setup()
     {
@@ -30,9 +19,10 @@ public class ProductReadFacadeTests
         _facade = new ProductReadFacade(_mongoMock.Object, _cacheMock.Object);
     }
 
-    #endregion
-
-    #region Tests
+    private Faker _faker = null!;
+    private Mock<IReadRepository<ProductReadModel>> _mongoMock = null!;
+    private Mock<ICacheService<ProductReadModel>> _cacheMock = null!;
+    private ProductReadFacade _facade = null!;
 
     [Test]
     public async Task GetByIdAsync_Should_Return_From_Cache_If_Found()
@@ -64,7 +54,9 @@ public class ProductReadFacadeTests
         var result = await _facade.GetByIdAsync(id);
 
         Assert.That(result, Is.EqualTo(fromMongo));
-        _cacheMock.Verify(x => x.SetAsync($"product:{id}", fromMongo, It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
+        _cacheMock.Verify(
+            x => x.SetAsync($"product:{id}", fromMongo, It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Test]
@@ -100,16 +92,15 @@ public class ProductReadFacadeTests
         _cacheMock.Verify(x => x.SetAsync(
             $"product:{id}", model, It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
     }
-
-    #endregion
 }
 
 #region Faker Extensions
 
 public static class FakerProductExtensions
 {
-    public static ProductReadModel GenerateProductReadModel(this Faker faker, Guid? id = null) =>
-        new()
+    public static ProductReadModel GenerateProductReadModel(this Faker faker, Guid? id = null)
+    {
+        return new ProductReadModel
         {
             Id = id ?? Guid.NewGuid(),
             Name = faker.Commerce.ProductName(),
@@ -117,10 +108,11 @@ public static class FakerProductExtensions
             Price = faker.Random.Decimal(10, 1000),
             Stock = faker.Random.Int(1, 50),
             Category = faker.Commerce.Categories(1)[0],
-            Tags = new() { "tag1", "tag2" },
-            Images = new() { "img1.png", "img2.png" },
+            Tags = new List<string> { "tag1", "tag2" },
+            Images = new List<string> { "img1.png", "img2.png" },
             CreatedAt = DateTime.UtcNow
         };
+    }
 }
 
 #endregion

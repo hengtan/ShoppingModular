@@ -7,8 +7,6 @@ namespace ShoppingModular.IntegrationTests.Products;
 [TestFixture]
 public class ProductDbContextTests
 {
-    private ProductDbContext? _dbContext;
-
     [SetUp]
     public void Setup()
     {
@@ -24,6 +22,8 @@ public class ProductDbContextTests
     {
         _dbContext?.Dispose();
     }
+
+    private ProductDbContext? _dbContext;
 
     [Test]
     public async Task Should_Connect_To_Postgres()
@@ -43,8 +43,8 @@ public class ProductDbContextTests
             Price = 9.99m,
             Stock = 5,
             Category = "Tests",
-            Tags = new() { "unit" },
-            Images = new() { "img.jpg" },
+            Tags = new List<string> { "unit" },
+            Images = new List<string> { "img.jpg" },
             CreatedAt = DateTime.UtcNow
         };
 
@@ -71,8 +71,8 @@ public class ProductDbContextTests
             Price = 5,
             Stock = 3,
             Category = "PreUpdate",
-            Tags = new() { "update" },
-            Images = new() { "img1.png" },
+            Tags = new List<string> { "update" },
+            Images = new List<string> { "img1.png" },
             CreatedAt = DateTime.UtcNow
         };
 
@@ -98,8 +98,8 @@ public class ProductDbContextTests
             Price = 10,
             Stock = 2,
             Category = "Test",
-            Tags = new() { "del" },
-            Images = new() { "del.jpg" },
+            Tags = new List<string> { "del" },
+            Images = new List<string> { "del.jpg" },
             CreatedAt = DateTime.UtcNow
         };
 

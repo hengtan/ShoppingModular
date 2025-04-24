@@ -6,7 +6,7 @@ using ShoppingModular.Infrastructure.Interfaces.Products;
 namespace Products.Api.Controllers;
 
 /// <summary>
-/// Controller responsável por operações de produtos.
+///     Controller responsável por operações de produtos.
 /// </summary>
 [ApiController]
 [Route("api/products")]
@@ -24,7 +24,7 @@ public class ProductsController : ControllerBase
     #region POST /api/products
 
     /// <summary>
-    /// Cria um novo produto.
+    ///     Cria um novo produto.
     /// </summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductCommand command)
@@ -38,7 +38,7 @@ public class ProductsController : ControllerBase
     #region GET /api/products/{id}
 
     /// <summary>
-    /// Busca um produto por ID com fallback de Redis para MongoDB.
+    ///     Busca um produto por ID com fallback de Redis para MongoDB.
     /// </summary>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)

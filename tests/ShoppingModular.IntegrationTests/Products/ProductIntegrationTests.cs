@@ -4,7 +4,6 @@ using Bogus;
 using KafkaProducerService;
 using MongoDB.Driver;
 using Moq;
-using NUnit.Framework;
 using ShoppingModular.Application.Products.Commands;
 using ShoppingModular.Domain.Products;
 using ShoppingModular.Infrastructure.Interfaces;
@@ -15,19 +14,6 @@ namespace ShoppingModular.IntegrationTests.Products;
 [TestFixture]
 public class CreateProductUnitTests
 {
-    #region Fields
-
-    private Faker _faker = null!;
-    private Mock<IProductWriteRepository> _writeRepo = null!;
-    private Mock<ICacheService<ProductReadModel>> _cache = null!;
-    private Mock<IKafkaProducerService> _kafka = null!;
-    private Mock<IMongoDatabase> _mongoDb = null!;
-    private Mock<IMongoCollection<ProductReadModel>> _mongoCollection = null!;
-
-    #endregion
-
-    #region Setup
-
     [SetUp]
     public void Setup()
     {
@@ -49,15 +35,21 @@ public class CreateProductUnitTests
             It.IsAny<CancellationToken>()));
     }
 
-    #endregion
+    private Faker _faker = null!;
+    private Mock<IProductWriteRepository> _writeRepo = null!;
+    private Mock<ICacheService<ProductReadModel>> _cache = null!;
+    private Mock<IKafkaProducerService> _kafka = null!;
+    private Mock<IMongoDatabase> _mongoDb = null!;
+    private Mock<IMongoCollection<ProductReadModel>> _mongoCollection = null!;
 
-    #region Helpers
+    private CreateProductCommandHandler CreateHandler()
+    {
+        return new CreateProductCommandHandler(_writeRepo.Object, _mongoDb.Object, _cache.Object, _kafka.Object);
+    }
 
-    private CreateProductCommandHandler CreateHandler() =>
-        new(_writeRepo.Object, _mongoDb.Object, _cache.Object, _kafka.Object);
-
-    private CreateProductCommand GenerateValidCommand() =>
-        new()
+    private CreateProductCommand GenerateValidCommand()
+    {
+        return new CreateProductCommand
         {
             Name = _faker.Commerce.ProductName(),
             Description = _faker.Commerce.ProductDescription(),
@@ -67,10 +59,7 @@ public class CreateProductUnitTests
             Tags = new[] { "tag1", "tag2" }.ToList(),
             Images = new[] { "http://img1.jpg", "http://img2.jpg" }.ToList()
         };
-
-    #endregion
-
-    #region Tests
+    }
 
     [Test]
     public async Task Should_Create_Product_And_Project_To_All_Systems()
@@ -85,8 +74,12 @@ public class CreateProductUnitTests
             _writeRepo.Verify(r => r.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once);
             _mongoDb.Verify(db => db.GetCollection<ProductReadModel>("products", null), Times.Once);
             _mongoCollection.Verify(c => c.InsertOneAsync(It.IsAny<ProductReadModel>(), null, default), Times.Once);
-            _cache.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<ProductReadModel>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
-            _kafka.Verify(k => k.PublishAsync("products.created", It.IsAny<ProductReadModel>(), It.IsAny<CancellationToken>()), Times.Once);
+            _cache.Verify(
+                c => c.SetAsync(It.IsAny<string>(), It.IsAny<ProductReadModel>(), It.IsAny<TimeSpan>(),
+                    It.IsAny<CancellationToken>()), Times.Once);
+            _kafka.Verify(
+                k => k.PublishAsync("products.created", It.IsAny<ProductReadModel>(), It.IsAny<CancellationToken>()),
+                Times.Once);
         });
     }
 
@@ -120,7 +113,9 @@ public class CreateProductUnitTests
         var handler = CreateHandler();
 
         Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
-        _cache.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<ProductReadModel>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
+        _cache.Verify(
+            c => c.SetAsync(It.IsAny<string>(), It.IsAny<ProductReadModel>(), It.IsAny<TimeSpan>(),
+                It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Test]
@@ -154,7 +149,8 @@ public class CreateProductUnitTests
     [Test]
     public void Should_Throw_When_Kafka_Fails()
     {
-        _kafka.Setup(k => k.PublishAsync(It.IsAny<string>(), It.IsAny<ProductReadModel>(), It.IsAny<CancellationToken>()))
+        _kafka.Setup(k =>
+                k.PublishAsync(It.IsAny<string>(), It.IsAny<ProductReadModel>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Kafka failure"));
 
         var command = GenerateValidCommand();
@@ -162,6 +158,4 @@ public class CreateProductUnitTests
 
         Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
     }
-
-    #endregion
 }

@@ -1,7 +1,7 @@
 namespace KafkaProducerService.Api.Events;
 
 /// <summary>
-/// Evento publicado no Kafka após criação de um produto.
+///     Evento publicado no Kafka após criação de um produto.
 /// </summary>
 public class ProductCreatedEvent
 {

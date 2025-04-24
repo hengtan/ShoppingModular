@@ -20,8 +20,16 @@ public class Product
     public DateTime? UpdatedAt { get; set; }
 
     // Métodos de domínio ricos
-    public void Activate() => IsActive = true;
-    public void Deactivate() => IsActive = false;
+    public void Activate()
+    {
+        IsActive = true;
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+    }
+
     public void UpdateStock(int quantity)
     {
         Stock += quantity;

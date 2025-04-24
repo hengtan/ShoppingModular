@@ -12,19 +12,6 @@ namespace ShoppingModular.IntegrationTests.Orders;
 [TestFixture]
 public class CreateOrderUnitTests
 {
-    #region Fields
-
-    private Faker _faker = null!;
-    private Mock<IOrderWriteRepository> _writeRepo = null!;
-    private Mock<ICacheService<OrderReadModel>> _cache = null!;
-    private Mock<IKafkaProducerService> _kafka = null!;
-    private Mock<IMongoDatabase> _mongoDb = null!;
-    private Mock<IMongoCollection<OrderReadModel>> _mongoCollection = null!;
-
-    #endregion
-
-    #region Setup
-
     [SetUp]
     public void Setup()
     {
@@ -48,16 +35,17 @@ public class CreateOrderUnitTests
             It.IsAny<CancellationToken>()));
     }
 
-    #endregion
+    private Faker _faker = null!;
+    private Mock<IOrderWriteRepository> _writeRepo = null!;
+    private Mock<ICacheService<OrderReadModel>> _cache = null!;
+    private Mock<IKafkaProducerService> _kafka = null!;
+    private Mock<IMongoDatabase> _mongoDb = null!;
+    private Mock<IMongoCollection<OrderReadModel>> _mongoCollection = null!;
 
-    #region Helpers
-
-    private CreateOrderCommandHandler CreateHandler() =>
-        new(_writeRepo.Object, _mongoDb.Object, _cache.Object, _kafka.Object);
-
-    #endregion
-
-    #region Tests
+    private CreateOrderCommandHandler CreateHandler()
+    {
+        return new CreateOrderCommandHandler(_writeRepo.Object, _mongoDb.Object, _cache.Object, _kafka.Object);
+    }
 
     [Test]
     public async Task Should_Create_Order_And_Project_To_All_Systems()
@@ -75,8 +63,12 @@ public class CreateOrderUnitTests
             _writeRepo.Verify(r => r.AddAsync(It.IsAny<Order>(), It.IsAny<CancellationToken>()), Times.Once);
             _mongoDb.Verify(db => db.GetCollection<OrderReadModel>("orders", null), Times.Once);
             _mongoCollection.Verify(c => c.InsertOneAsync(It.IsAny<OrderReadModel>(), null, default), Times.Once);
-            _cache.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
-            _kafka.Verify(k => k.PublishAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<CancellationToken>()), Times.Once);
+            _cache.Verify(
+                c => c.SetAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<TimeSpan>(),
+                    It.IsAny<CancellationToken>()), Times.Once);
+            _kafka.Verify(
+                k => k.PublishAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<CancellationToken>()),
+                Times.Once);
         });
     }
 
@@ -100,7 +92,9 @@ public class CreateOrderUnitTests
         var handler = CreateHandler();
 
         Assert.ThrowsAsync<Exception>(async () => await handler.Handle(command, CancellationToken.None));
-        _cache.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
+        _cache.Verify(
+            c => c.SetAsync(It.IsAny<string>(), It.IsAny<OrderReadModel>(), It.IsAny<TimeSpan>(),
+                It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Test]
@@ -131,6 +125,4 @@ public class CreateOrderUnitTests
 
         Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
     }
-
-    #endregion
 }

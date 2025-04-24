@@ -1,9 +1,6 @@
 using System.Text.Json;
 using Confluent.Kafka;
 using KafkaProducerService.Api.Events;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 using ShoppingModular.Domain.Products;
 using ShoppingModular.Infrastructure.Interfaces;
@@ -11,7 +8,7 @@ using ShoppingModular.Infrastructure.Interfaces;
 namespace Products.Consumer;
 
 /// <summary>
-/// Worker que escuta o tópico "products.created" e projeta no MongoDB e Redis.
+///     Worker que escuta o tópico "products.created" e projeta no MongoDB e Redis.
 /// </summary>
 public class ProductCreatedConsumerWorker(IServiceProvider serviceProvider, IConfiguration configuration)
     : BackgroundService
@@ -29,7 +26,6 @@ public class ProductCreatedConsumerWorker(IServiceProvider serviceProvider, ICon
         consumer.Subscribe("products.created");
 
         while (!stoppingToken.IsCancellationRequested)
-        {
             try
             {
                 var result = consumer.Consume(stoppingToken);
@@ -67,7 +63,6 @@ public class ProductCreatedConsumerWorker(IServiceProvider serviceProvider, ICon
             {
                 Console.WriteLine($"❌ Error: {ex.Message}");
             }
-        }
 
         consumer.Close();
     }

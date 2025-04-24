@@ -13,19 +13,6 @@ namespace ShoppingModular.Tests.Commands;
 [TestFixture]
 public class CreateOrderCommandHandlerTests
 {
-    #region Fields
-
-    private Faker _faker = null!;
-    private Mock<IOrderWriteRepository> _writeRepoMock = null!;
-    private Mock<IMongoDatabase> _mongoDbMock = null!;
-    private Mock<IMongoCollection<OrderReadModel>> _mongoCollectionMock = null!;
-    private Mock<ICacheService<OrderReadModel>> _cacheMock = null!;
-    private Mock<IKafkaProducerService> _kafkaMock = null!;
-
-    #endregion
-
-    #region Setup
-
     [SetUp]
     public void Setup()
     {
@@ -47,16 +34,18 @@ public class CreateOrderCommandHandlerTests
             .Returns(_mongoCollectionMock.Object);
     }
 
-    #endregion
+    private Faker _faker = null!;
+    private Mock<IOrderWriteRepository> _writeRepoMock = null!;
+    private Mock<IMongoDatabase> _mongoDbMock = null!;
+    private Mock<IMongoCollection<OrderReadModel>> _mongoCollectionMock = null!;
+    private Mock<ICacheService<OrderReadModel>> _cacheMock = null!;
+    private Mock<IKafkaProducerService> _kafkaMock = null!;
 
-    #region Helpers
-
-    private CreateOrderCommandHandler CreateHandler() =>
-        new(_writeRepoMock.Object, _mongoDbMock.Object, _cacheMock.Object, _kafkaMock.Object);
-
-    #endregion
-
-    #region Tests
+    private CreateOrderCommandHandler CreateHandler()
+    {
+        return new CreateOrderCommandHandler(_writeRepoMock.Object, _mongoDbMock.Object, _cacheMock.Object,
+            _kafkaMock.Object);
+    }
 
     [Test]
     public async Task Handle_Should_Persist_Order_And_Trigger_Projections_And_Cache_And_Kafka()
@@ -92,6 +81,4 @@ public class CreateOrderCommandHandlerTests
         _kafkaMock.Verify(x =>
             x.PublishAsync("orders.created", It.IsAny<OrderReadModel>(), It.IsAny<CancellationToken>()), Times.Once);
     }
-
-    #endregion
 }

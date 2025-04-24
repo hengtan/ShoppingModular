@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 
-using Microsoft.Extensions.DependencyInjection;
-
 namespace ShoppingModular.Infrastructure.Extensions;
 
 public static class WebAppExtensions

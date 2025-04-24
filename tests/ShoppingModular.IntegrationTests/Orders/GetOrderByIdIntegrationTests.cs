@@ -9,10 +9,6 @@ namespace ShoppingModular.IntegrationTests.Orders;
 [TestFixture]
 public class GetOrderByIdUnitTests
 {
-    private Faker _faker = null!;
-    private Mock<IOrderReadFacade> _facade = null!;
-    private GetOrderByIdQueryHandler _handler = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -20,6 +16,10 @@ public class GetOrderByIdUnitTests
         _facade = new Mock<IOrderReadFacade>();
         _handler = new GetOrderByIdQueryHandler(_facade.Object);
     }
+
+    private Faker _faker = null!;
+    private Mock<IOrderReadFacade> _facade = null!;
+    private GetOrderByIdQueryHandler _handler = null!;
 
     [Test]
     public async Task Should_Return_Order_When_Found_In_Cache_Or_Mongo()
@@ -35,7 +35,7 @@ public class GetOrderByIdUnitTests
         };
 
         _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-               .ReturnsAsync(expected);
+            .ReturnsAsync(expected);
 
         // Act
         var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
@@ -52,7 +52,7 @@ public class GetOrderByIdUnitTests
         var id = Guid.NewGuid();
 
         _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-               .ReturnsAsync((OrderReadModel?)null);
+            .ReturnsAsync((OrderReadModel?)null);
 
         var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
 
@@ -72,7 +72,7 @@ public class GetOrderByIdUnitTests
         };
 
         _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-               .ReturnsAsync(expected);
+            .ReturnsAsync(expected);
 
         var result = await _handler.Handle(new GetOrderByIdQuery(id), CancellationToken.None);
 
@@ -88,7 +88,8 @@ public class GetOrderByIdUnitTests
     public async Task Should_Fallback_To_Mongo_When_Cache_Is_Null()
     {
         var id = Guid.NewGuid();
-        var expected = new OrderReadModel { Id = id, CustomerName = "Mongo Heng", TotalAmount = 150, CreatedAt = DateTime.UtcNow };
+        var expected = new OrderReadModel
+            { Id = id, CustomerName = "Mongo Heng", TotalAmount = 150, CreatedAt = DateTime.UtcNow };
 
         _facade.Setup(f => f.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(expected);
 

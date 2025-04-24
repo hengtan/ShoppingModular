@@ -1,87 +1,94 @@
 # 🛒 ShoppingModular
 
-## 📌 Projeto Modular de E-commerce com .NET 9
-
-O **ShoppingModular** é uma aplicação de e-commerce moderna, escalável e baseada em **microserviços**, construída 
-com foco em **DDD**, **CQRS**, **Event Sourcing**, **Kafka**, **Redis**, **MongoDB**, **PostgreSQL** e 
-com total observabilidade.
+Projeto de E-commerce modular com arquitetura moderna baseada em **microserviços**, **DDD**, **CQRS**, **Event Sourcing** e **Clean Architecture**, utilizando tecnologias de ponta como `.NET 9`, `Kafka`, `Redis`, `MongoDB`, `PostgreSQL`, `Prometheus`, `Grafana`, `Elastic Stack` e `Docker`.
 
 ---
 
-## 🧱 Tecnologias Utilizadas
+## 🧱 Estrutura do Projeto
 
-| Tecnologia | Uso |
-|-----------|-----|
-| .NET 9 | Framework principal |
-| DDD + CQRS + Event Sourcing | Arquitetura |
-| PostgreSQL | Escrita (Write Model) |
-| MongoDB | Leitura (Read Model) |
-| Redis | Cache-aside (leitura com fallback) |
-| Kafka | Mensageria entre serviços |
-| Docker Compose | Orquestração local |
-| Serilog | Logging estruturado |
-| Prometheus | Métricas customizadas |
-| Grafana | Dashboard de observabilidade |
-| NUnit + Bogus + Moq | Testes unitários e mocks |
-
----
-
-## 🚀 Funcionalidades Atuais
-
-- 📦 Criação de pedidos (`Orders.API`)
-- 🧾 Persistência em PostgreSQL (write) e MongoDB (read)
-- 🧠 Cache com Redis
-- 📬 Envio de eventos para Kafka após criação
-- 🧪 Testes unitários com 100% de cobertura
-- 📊 Métricas expostas via Prometheus
-- 🪵 Logs estruturados com Serilog
-- 🧰 Integração com Docker e GitHub Actions
-
----
-
-## 📈 Backlog + Progresso
-
-| Funcionalidade                                      | Status       |
-|----------------------------------------------------|--------------|
-| Orders.API com gravação em PostgreSQL              | ✅ Concluído |
-| Projeção MongoDB + Redis (cache-aside)             | ✅ Concluído |
-| Kafka Producer (orders.created)                    | ✅ Concluído |
-| Orders.Consumer: salva Mongo e .txt                | ✅ Concluído |
-| Testes unitários com 100% de cobertura             | ✅ Concluído |
-| Prometheus + métricas customizadas                 | ✅ Concluído |
-| Logs estruturados com Serilog                      | ✅ Concluído |
-| Products.API + Payments.API + Notifications        | 🚧 Em desenvolvimento |
-| Dashboard no Grafana com logs + métricas           | 🚧 Em desenvolvimento |
-| Deploy real com Kubernetes                         | 🔜 Futuro |
-
----
-
-## 🧠 Visão Futura
-
-- Microserviços completos para produtos, pagamentos e notificações
-- Comunicação via gRPC e Kafka
-- Observabilidade completa com logs centralizados e alertas
-- Integração com sistemas de recomendação (ML)
-- Deploy em Kubernetes com CI/CD via GitHub Actions
-- Orquestração de workflows com Temporal.io
-
----
-
-## 🛠️ Como Rodar Localmente
-
-```bash
-# Subir ambiente com Kafka, Redis, Mongo, Postgres, etc.
-docker compose up -d
-
-# Rodar os testes
-dotnet test
+```
+ShoppingModular/
+├── building-blocks/            # Camadas compartilhadas (Domain, Application, Infrastructure)
+├── services/                   # Microserviços (Orders.API, Products.API, Payments.API...)
+│   ├── Orders.API/
+│   ├── Products.API/
+│   ├── Orders.Consumer/
+│   └── Payments.API/ (em breve)
+├── docker/                     # Docker Compose com Redis, MongoDB, PostgreSQL, Kafka, Prometheus, Grafana
+├── tests/                      # NUnit + Bogus com 100% de cobertura
+├── .github/workflows/          # CI/CD com GitHub Actions
+└── README.md
 ```
 
 ---
 
-## 👨‍💻 Contribuições
+## 🚀 Tecnologias Usadas
 
-Este projeto segue boas práticas de Clean Code, SOLID, testes automatizados e arquitetura orientada a eventos.
-Ideal para quem deseja estudar padrões modernos com .NET.
+- **Backend**: .NET 9, C#
+- **Mensageria**: Kafka + Confluent.Kafka
+- **Bancos**: PostgreSQL (write), MongoDB (read), Redis (cache)
+- **Arquitetura**: DDD + CQRS + Event Sourcing + Clean Architecture
+- **Observabilidade**: Serilog + Elastic Stack (ELK), Prometheus + Grafana
+- **Testes**: NUnit + Bogus + Coverlet (100% cobertura) + ReportGenerator
+- **Deploy & CI/CD**: Docker, GitHub Actions
+- **Documentação**: Swagger + ReDoc
 
 ---
+
+## 📦 Como rodar localmente
+
+```bash
+# Subir infraestrutura
+cd docker/infra
+docker compose up -d
+
+# Subir o projeto
+dotnet build
+dotnet run --project services/Orders.API/Orders.API.csproj
+```
+
+> Certifique-se de que o `ASPNETCORE_ENVIRONMENT=Local` esteja setado (automaticamente pelo docker).
+
+---
+
+## 🧪 Executar Testes
+
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html
+```
+
+> O relatório de cobertura será gerado na pasta `coverage-report/index.html`.
+
+---
+
+## 📊 Dashboards e Logs
+
+- Grafana: [http://localhost:3000](http://localhost:3000)
+- Kibana: [http://localhost:5601](http://localhost:5601)
+- Prometheus: [http://localhost:9090](http://localhost:9090)
+
+---
+
+## 🧰 Comandos Úteis
+
+```bash
+# Resetar ambiente
+docker compose down -v && docker compose up -d
+
+# Subir apenas um serviço
+docker compose up orders-api
+
+# Validar testes no CI
+gh workflow run ci.yml
+```
+
+---
+
+## 🗂️ Próximos Passos
+
+- [x] Orders.API (com Redis, Mongo, PostgreSQL e Kafka)
+- [x] Products.API (em progresso)
+- [ ] Payments.API (próximo serviço)
+- [ ] Notifications.API (integrações com e-mail, SMS, etc.)
+- [ ] Front-end React + Tailwind (futuro)

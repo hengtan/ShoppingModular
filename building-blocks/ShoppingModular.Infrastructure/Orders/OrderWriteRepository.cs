@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using ShoppingModular.Domain.Orders;
 using ShoppingModular.Infrastructure.Common.Postgres;
 using ShoppingModular.Infrastructure.Interfaces.Order;

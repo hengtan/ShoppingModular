@@ -1,11 +1,10 @@
 using System.Text.Json;
 using Confluent.Kafka;
-using Microsoft.Extensions.Configuration;
 
 namespace KafkaProducerService;
 
 /// <summary>
-/// Serviço responsável por publicar eventos genéricos no Kafka.
+///     Serviço responsável por publicar eventos genéricos no Kafka.
 /// </summary>
 public class KafkaProducerService : IKafkaProducerService
 {

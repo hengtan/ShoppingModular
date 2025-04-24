@@ -35,8 +35,8 @@ public class DebugController(
 
         // 2️⃣ MongoDB
         var mongoOrders = await mongo.GetCollection<OrderReadModel>("orders")
-                                     .Find(Builders<OrderReadModel>.Filter.Empty)
-                                     .ToListAsync(ct);
+            .Find(Builders<OrderReadModel>.Filter.Empty)
+            .ToListAsync(ct);
         result.Mongo.AddRange(mongoOrders);
 
         // 3️⃣ Redis
@@ -45,7 +45,6 @@ public class DebugController(
         var keys = server.Keys(pattern: "order:*").ToArray();
 
         foreach (var key in keys)
-        {
             try
             {
                 var json = await db.StringGetAsync(key);
@@ -60,7 +59,6 @@ public class DebugController(
             {
                 Console.WriteLine($"⚠️ Ignorando chave inválida no Redis: {key}");
             }
-        }
 
         // 4️⃣ Kafka
         var consumerConfig = new ConsumerConfig

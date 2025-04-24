@@ -1,6 +1,5 @@
 using Bogus;
 using KafkaProducerService;
-using KafkaProducerService.Api.Events;
 using MongoDB.Driver;
 using Moq;
 using NUnit.Framework;
@@ -14,15 +13,6 @@ namespace ShoppingModular.Tests.Commands.Products;
 [TestFixture]
 public class CreateProductCommandHandlerTests
 {
-    #region Setup
-
-    private Faker _faker = null!;
-    private Mock<IProductWriteRepository> _writeRepo = null!;
-    private Mock<IMongoDatabase> _mongoDb = null!;
-    private Mock<IMongoCollection<ProductReadModel>> _mongoCollection = null!;
-    private Mock<ICacheService<ProductReadModel>> _cache = null!;
-    private Mock<IKafkaProducerService> _kafka = null!;
-
     [SetUp]
     public void Setup()
     {
@@ -38,12 +28,17 @@ public class CreateProductCommandHandlerTests
             .Returns(_mongoCollection.Object);
     }
 
-    private CreateProductCommandHandler CreateHandler() =>
-        new(_writeRepo.Object, _mongoDb.Object, _cache.Object, _kafka.Object);
+    private Faker _faker = null!;
+    private Mock<IProductWriteRepository> _writeRepo = null!;
+    private Mock<IMongoDatabase> _mongoDb = null!;
+    private Mock<IMongoCollection<ProductReadModel>> _mongoCollection = null!;
+    private Mock<ICacheService<ProductReadModel>> _cache = null!;
+    private Mock<IKafkaProducerService> _kafka = null!;
 
-    #endregion
-
-    #region Tests
+    private CreateProductCommandHandler CreateHandler()
+    {
+        return new CreateProductCommandHandler(_writeRepo.Object, _mongoDb.Object, _cache.Object, _kafka.Object);
+    }
 
     [Test]
     public async Task Should_Create_And_Return_Id()
@@ -185,21 +180,17 @@ public class CreateProductCommandHandlerTests
         }
     }
 
-    #endregion
-
-    #region Helpers
-
-    private CreateProductCommand GenerateValidCommand() =>
-        new()
+    private CreateProductCommand GenerateValidCommand()
+    {
+        return new CreateProductCommand
         {
             Name = _faker.Commerce.ProductName(),
             Description = _faker.Commerce.ProductDescription(),
             Price = _faker.Random.Decimal(1, 500),
             Stock = _faker.Random.Int(1, 100),
             Category = _faker.Commerce.Categories(1)[0],
-            Tags = new() { "tag1", "tag2" },
-            Images = new() { "http://image1.jpg", "http://image2.jpg" }
+            Tags = new List<string> { "tag1", "tag2" },
+            Images = new List<string> { "http://image1.jpg", "http://image2.jpg" }
         };
-
-    #endregion
+    }
 }

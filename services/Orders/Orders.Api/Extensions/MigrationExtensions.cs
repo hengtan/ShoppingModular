@@ -11,10 +11,9 @@ public static class MigrationExtensions
         var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
 
         const int maxRetries = 10;
-        int retry = 0;
+        var retry = 0;
 
         while (retry < maxRetries)
-        {
             try
             {
                 var pending = await dbContext.Database.GetPendingMigrationsAsync();
@@ -37,7 +36,6 @@ public static class MigrationExtensions
                 Console.WriteLine($"⏳ Retry {retry}/{maxRetries} - Waiting for DB... Error: {ex.Message}");
                 await Task.Delay(3000);
             }
-        }
 
         if (retry == maxRetries)
             throw new Exception("❌ Failed to apply migrations after multiple retries.");

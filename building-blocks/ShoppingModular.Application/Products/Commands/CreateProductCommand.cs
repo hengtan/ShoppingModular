@@ -3,7 +3,7 @@ using MediatR;
 namespace ShoppingModular.Application.Products.Commands;
 
 /// <summary>
-/// Comando para criar um novo produto.
+///     Comando para criar um novo produto.
 /// </summary>
 public class CreateProductCommand : IRequest<Guid>
 {

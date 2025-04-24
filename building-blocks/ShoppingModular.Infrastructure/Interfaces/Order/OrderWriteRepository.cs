@@ -1,7 +1,6 @@
-using DomainOrder = ShoppingModular.Domain.Orders.Order;
-
 using ShoppingModular.Infrastructure.Common.Postgres;
 using ShoppingModular.Infrastructure.Orders;
+using DomainOrder = ShoppingModular.Domain.Orders.Order;
 
 namespace ShoppingModular.Infrastructure.Interfaces.Order;
 

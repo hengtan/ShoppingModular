@@ -1,5 +1,4 @@
 using KafkaProducerService;
-using KafkaProducerService.Api;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using Orders.Api.Extensions;
@@ -18,8 +17,8 @@ var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?
 // ─────────────────────────────────────────────────────────────
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: true)
-    .AddJsonFile($"appsettings.{environment}.json", optional: true)
+    .AddJsonFile("appsettings.json", true)
+    .AddJsonFile($"appsettings.{environment}.json", true)
     .AddEnvironmentVariables()
     .Build();
 
@@ -59,8 +58,8 @@ builder.Services.AddInfrastructure();
 
 builder.Services.AddScoped<IOrderWriteRepository, OrderWriteRepository>();
 builder.Services.AddScoped<IKafkaProducerService, KafkaProducerService.KafkaProducerService>();
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    _ => ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")));
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")));
 
 var app = builder.Build();
 

@@ -5,7 +5,7 @@ using ShoppingModular.Infrastructure.Interfaces.Products;
 namespace ShoppingModular.Infrastructure.Products;
 
 /// <summary>
-/// Responsável por aplicar o padrão cache-aside na leitura de produtos.
+///     Responsável por aplicar o padrão cache-aside na leitura de produtos.
 /// </summary>
 public class ProductReadFacade(
     IReadRepository<ProductReadModel> mongoRepo,
@@ -23,10 +23,7 @@ public class ProductReadFacade(
 
         // 2. Se não encontrou, busca do MongoDB
         var product = await mongoRepo.GetByIdAsync(id, ct);
-        if (product is not null)
-        {
-            await redisCache.SetAsync(cacheKey, product, TimeSpan.FromMinutes(10), ct);
-        }
+        if (product is not null) await redisCache.SetAsync(cacheKey, product, TimeSpan.FromMinutes(10), ct);
 
         return product;
     }

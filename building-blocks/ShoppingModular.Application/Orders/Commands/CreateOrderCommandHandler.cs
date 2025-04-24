@@ -8,7 +8,7 @@ using ShoppingModular.Infrastructure.Interfaces.Order;
 namespace ShoppingModular.Application.Orders.Commands;
 
 /// <summary>
-/// Handler responsável por criar pedidos, salvar projeção, cachear e publicar evento no Kafka.
+///     Handler responsável por criar pedidos, salvar projeção, cachear e publicar evento no Kafka.
 /// </summary>
 public class CreateOrderCommandHandler(
     IOrderWriteRepository writeRepo,

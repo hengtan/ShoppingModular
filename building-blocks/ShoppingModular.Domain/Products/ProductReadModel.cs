@@ -1,7 +1,7 @@
 namespace ShoppingModular.Domain.Products;
 
 /// <summary>
-/// Modelo de leitura para produto, usado em projeções e cache.
+///     Modelo de leitura para produto, usado em projeções e cache.
 /// </summary>
 public class ProductReadModel
 {
